@@ -3,13 +3,16 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
 
 namespace KrissyWeatherApp
 {
+
     public partial class MainPage : ContentPage
     {
         public MainPage()
@@ -57,7 +60,7 @@ namespace KrissyWeatherApp
 
         private async void GetWeatherInfo()
         {
-            var url = $"https://api.openweathermap.org/data/2.5/weather?q={Location}&appid=2c24436d9d9a44bc6d9eae99d7835bb9&units=metric";
+            var url = $"https://api.openweathermap.org/data/2.5/weather?q={Location}&appid=dc54e79fa4e86af5e0695a9aea0a8945&units=metric";
 
             var result = await ApiCaller.Get(url);
 
@@ -71,8 +74,7 @@ namespace KrissyWeatherApp
                     iconImg.Source = $"w{weatherInfo.weather[0].icon}";
                     cityTxt.Text = weatherInfo.name.ToUpper();
                     temp.Text = weatherInfo.main.temp.ToString("0");
-                    tempmin.Text = weatherInfo.main.temp_min.ToString("0");
-                    tempmax.Text = weatherInfo.main.temp_max.ToString("0");
+
                     feelslike.Text = weatherInfo.main.feels_like.ToString("0") + "°";
                     humidity.Text = $"{weatherInfo.main.humidity}%";
                     windspeed.Text = $" {weatherInfo.wind.speed} m/s";
@@ -110,7 +112,7 @@ namespace KrissyWeatherApp
         }
         private async void GetForecast()
         {
-            var url = $"https://api.openweathermap.org/data/2.5/forecast?q={Location}&appid=2c24436d9d9a44bc6d9eae99d7835bb9&units=metric";
+            var url = $"https://api.openweathermap.org/data/2.5/forecast?q={Location}&appid=dc54e79fa4e86af5e0695a9aea0a8945&units=metric";
             var result = await ApiCaller.Get(url);
 
             if (result.Successful)
@@ -156,7 +158,6 @@ namespace KrissyWeatherApp
                     tempFiveTxt.Text = allList[4].main.temp.ToString("0");
 
 
-
                 }
                 catch (Exception ex)
                 {
@@ -179,46 +180,28 @@ namespace KrissyWeatherApp
                 {
                     var forcastInfo = JsonConvert.DeserializeObject<ForecastInfo>(result.Response);
 
-                    List<List> allList = new List<List>();
+                    var allList = forcastInfo.list.Where(x => DateTime.Parse(x.dt_txt) >= DateTime.Now && DateTime.Parse(x.dt_txt) <= DateTime.Now.AddHours(24))
+                        .Where(x => DateTime.Parse(x.dt_txt).Hour % 3 == 0 && DateTime.Parse(x.dt_txt).Minute == 0 && DateTime.Parse(x.dt_txt).Second == 0)
+                        .ToList();
 
-                    foreach (var list in forcastInfo.list)
-                    {
-                        //var date = DateTime.ParseExact(list.dt_txt, "yyyy-MM-dd hh:mm:ss", CultureInfo.InvariantCulture);
-                        var date = DateTime.Parse(list.dt_txt);
-
-                        if (date > DateTime.Now && date.Hour == 0 && date.Minute == 0 && date.Second == 0)
-                            allList.Add(list);
-                    }
-
-                    //DateTimeOffset dateTimeOffset = DateTimeOffset.Parse(allList[0].dt_txt);
-                    //string formattedTime = dateTimeOffset.AddHours(3).ToString("h:mm tt");
                     First3hour.Text = DateTime.Parse(allList[0].dt_txt).ToString("h:mm tt");
-                    First3hourForecast.Text = allList[0].main.temp.ToString("0");
+                    First3hourForecast.Text = allList[0].main.temp.ToString("0") + "°";
 
-                    DateTimeOffset dateTimeOffset = DateTimeOffset.Parse(allList[1].dt_txt);
-                    string formattedTime = dateTimeOffset.AddHours(3).ToString("h:mm tt");
-                    Second3hour.Text = formattedTime;
-                    Second3hourForecast.Text = allList[1].main.temp.ToString("0");
+                    Second3hour.Text = DateTime.Parse(allList[1].dt_txt).ToString("h:mm tt");
+                    Second3hourForecast.Text = allList[1].main.temp.ToString("0") + "°";
 
-                    DateTimeOffset dateTimeOffset2 = DateTimeOffset.Parse(allList[2].dt_txt);
-                    string formattedTime2 = dateTimeOffset.AddHours(6).ToString("h:mm tt");
-                    T3hour.Text = formattedTime2;
-                    T3hourForecast.Text = allList[2].main.temp.ToString("0");
+                    T3hour.Text = DateTime.Parse(allList[2].dt_txt).ToString("h:mm tt");
+                    T3hourForecast.Text = allList[2].main.temp.ToString("0") + "°";
 
-                    DateTimeOffset dateTimeOffset3 = DateTimeOffset.Parse(allList[3].dt_txt);
-                    string formattedTime3 = dateTimeOffset.AddHours(9).ToString("h:mm tt");
-                    F3hour.Text = formattedTime3;
-                    F3hourForecast.Text = allList[3].main.temp.ToString("0");
+                    F3hour.Text = DateTime.Parse(allList[3].dt_txt).ToString("h:mm tt");
+                    F3hourForecast.Text = allList[3].main.temp.ToString("0") + "°";
 
-                    DateTimeOffset dateTimeOffset4 = DateTimeOffset.Parse(allList[4].dt_txt);
-                    string formattedTime4 = dateTimeOffset.AddHours(12).ToString("h:mm tt");
-                    Fif3hour.Text = formattedTime4;
-                    Fif3hourForecast.Text = allList[4].main.temp.ToString("0");
+                    Fif3hour.Text = DateTime.Parse(allList[4].dt_txt).ToString("h:mm tt");
+                    Fif3hourForecast.Text = allList[4].main.temp.ToString("0") + "°";
 
-                    DateTimeOffset dateTimeOffset5 = DateTimeOffset.Parse(allList[5].dt_txt);
-                    string formattedTime5 = dateTimeOffset.AddHours(15).ToString("h:mm tt");
-                    S3hour.Text = formattedTime5;
-                    S3hourForecast.Text = allList[5].main.temp.ToString("0");
+                    S3hour.Text = DateTime.Parse(allList[5].dt_txt).ToString("h:mm tt");
+                    S3hourForecast.Text = allList[5].main.temp.ToString("0") + "°";
+                   
                 }
                 catch (Exception ex)
                 {
@@ -229,7 +212,9 @@ namespace KrissyWeatherApp
             {
                 await DisplayAlert("Weather Info", "No forecast information found", "OK");
             }
-
+           
+            
         }
     }
 }
+
